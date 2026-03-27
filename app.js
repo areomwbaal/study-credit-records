@@ -24,6 +24,10 @@ function saveData(data) {
 let currentStudentId = null;
 let trendChart = null;
 
+// 临时存储待上传的图片
+let pendingWrongPhotos = [];
+let pendingCorrectionPhotos = [];
+
 // DOM 元素
 const studentSelect = document.getElementById('studentSelect');
 const addStudentBtn = document.getElementById('addStudentBtn');
@@ -46,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStudents();
     setupTabs();
     setupEventListeners();
+    setupPhotoUpload();
 });
 
 // 加载学生列表
@@ -225,18 +230,30 @@ function saveScore() {
         math: math || null,
         english: english || null,
         remarks: document.getElementById('remarks').value.trim(),
+        wrongPhotos: [...pendingWrongPhotos],
+        correctionPhotos: [...pendingCorrectionPhotos],
         createdAt: new Date().toISOString()
     };
 
     const data = getData();
     data.records.push(record);
-    saveData(data);
+
+    try {
+        saveData(data);
+    } catch (e) {
+        if (e.name === 'QuotaExceededError') {
+            showToast('存储空间不足，请删除一些旧记录', 'error');
+            return;
+        }
+        throw e;
+    }
 
     // 清空表单
     document.getElementById('chineseScore').value = '';
     document.getElementById('mathScore').value = '';
     document.getElementById('englishScore').value = '';
     document.getElementById('remarks').value = '';
+    clearPhotoPreview();
 
     showToast('成绩保存成功！', 'success');
     loadHistory();
@@ -271,7 +288,12 @@ function loadHistory() {
         final: '期末考试'
     };
 
-    historyList.innerHTML = records.map(record => `
+    historyList.innerHTML = records.map(record => {
+        const hasWrongPhotos = record.wrongPhotos && record.wrongPhotos.length > 0;
+        const hasCorrectionPhotos = record.correctionPhotos && record.correctionPhotos.length > 0;
+        const hasPhotos = hasWrongPhotos || hasCorrectionPhotos;
+
+        return `
         <div class="history-item" data-id="${record.id}">
             <div class="history-date">
                 <div class="date">${formatDate(record.date)}</div>
@@ -294,8 +316,28 @@ function loadHistory() {
             <div class="history-actions">
                 <button class="btn-delete" onclick="deleteRecord('${record.id}')">删除</button>
             </div>
+            ${hasPhotos ? `
+            <div class="history-photos">
+                ${hasWrongPhotos ? `
+                <div class="history-photo-group">
+                    <label>错题</label>
+                    <div class="history-photo-thumbs">
+                        ${record.wrongPhotos.map(p => `<img src="${p}" class="history-photo-thumb" onclick="viewPhoto('${p}')">`).join('')}
+                    </div>
+                </div>
+                ` : ''}
+                ${hasCorrectionPhotos ? `
+                <div class="history-photo-group">
+                    <label>订正</label>
+                    <div class="history-photo-thumbs">
+                        ${record.correctionPhotos.map(p => `<img src="${p}" class="history-photo-thumb" onclick="viewPhoto('${p}')">`).join('')}
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+            ` : ''}
         </div>
-    `).join('');
+    `}).join('');
 }
 
 // 删除记录
@@ -598,4 +640,144 @@ function showToast(message, type = 'info') {
     setTimeout(() => {
         toast.remove();
     }, 2500);
+}
+
+// ========== 照片上传相关 ==========
+
+// 设置照片上传
+function setupPhotoUpload() {
+    const wrongPhotoInput = document.getElementById('wrongPhoto');
+    const correctionPhotoInput = document.getElementById('correctionPhoto');
+
+    wrongPhotoInput.addEventListener('change', (e) => {
+        handlePhotoSelect(e.target.files, 'wrong');
+    });
+
+    correctionPhotoInput.addEventListener('change', (e) => {
+        handlePhotoSelect(e.target.files, 'correction');
+    });
+}
+
+// 处理图片选择
+async function handlePhotoSelect(files, type) {
+    const previewId = type === 'wrong' ? 'wrongPhotoPreview' : 'correctionPhotoPreview';
+    const preview = document.getElementById(previewId);
+    const pendingArray = type === 'wrong' ? pendingWrongPhotos : pendingCorrectionPhotos;
+
+    for (const file of files) {
+        if (!file.type.startsWith('image/')) continue;
+
+        try {
+            const compressed = await compressImage(file);
+            pendingArray.push(compressed);
+        } catch (err) {
+            console.error('图片压缩失败:', err);
+        }
+    }
+
+    updatePhotoPreview(preview, pendingArray, type);
+}
+
+// 压缩图片
+function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // 限制最大尺寸为800px
+                const maxSize = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height && width > maxSize) {
+                    height = (height * maxSize) / width;
+                    width = maxSize;
+                } else if (height > maxSize) {
+                    width = (width * maxSize) / height;
+                    height = maxSize;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // 压缩为JPEG，质量0.7
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                resolve(dataUrl);
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// 更新照片预览
+function updatePhotoPreview(container, photos, type) {
+    if (photos.length === 0) {
+        container.innerHTML = '<span>点击拍照或选择图片</span>';
+        container.classList.remove('has-photos');
+        return;
+    }
+
+    container.classList.add('has-photos');
+    container.innerHTML = photos.map((photo, index) => `
+        <div class="preview-thumb-wrapper">
+            <img src="${photo}" class="preview-thumb" onclick="viewPhoto('${photo}')">
+            <button type="button" class="preview-thumb-remove" onclick="removePhoto('${type}', ${index})">×</button>
+        </div>
+    `).join('');
+}
+
+// 移除照片
+function removePhoto(type, index) {
+    event.stopPropagation();
+    const previewId = type === 'wrong' ? 'wrongPhotoPreview' : 'correctionPhotoPreview';
+    const preview = document.getElementById(previewId);
+
+    if (type === 'wrong') {
+        pendingWrongPhotos.splice(index, 1);
+        updatePhotoPreview(preview, pendingWrongPhotos, type);
+    } else {
+        pendingCorrectionPhotos.splice(index, 1);
+        updatePhotoPreview(preview, pendingCorrectionPhotos, type);
+    }
+}
+
+// 查看大图
+function viewPhoto(src) {
+    const modal = document.getElementById('photoModal');
+    const img = document.getElementById('photoModalImg');
+    img.src = src;
+    modal.classList.add('active');
+}
+
+// 关闭照片模态框
+function closePhotoModal() {
+    document.getElementById('photoModal').classList.remove('active');
+}
+
+// 点击模态框背景关闭
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('photoModal');
+    if (e.target === modal) {
+        modal.classList.remove('active');
+    }
+});
+
+// 清空照片预览
+function clearPhotoPreview() {
+    pendingWrongPhotos = [];
+    pendingCorrectionPhotos = [];
+    document.getElementById('wrongPhotoPreview').innerHTML = '<span>点击拍照或选择图片</span>';
+    document.getElementById('wrongPhotoPreview').classList.remove('has-photos');
+    document.getElementById('correctionPhotoPreview').innerHTML = '<span>点击拍照或选择图片</span>';
+    document.getElementById('correctionPhotoPreview').classList.remove('has-photos');
+    document.getElementById('wrongPhoto').value = '';
+    document.getElementById('correctionPhoto').value = '';
 }

@@ -263,6 +263,198 @@ header h1 {
     min-height: 80px;
 }
 
+/* Photo Upload Section */
+.photo-section {
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--bg-color);
+    border-radius: 12px;
+}
+
+.photo-section h4 {
+    margin-bottom: 15px;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.photo-upload-area {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.photo-item label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.photo-input-wrapper {
+    position: relative;
+}
+
+.photo-input-wrapper input[type="file"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.photo-placeholder {
+    min-height: 120px;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    background: white;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.photo-placeholder:hover {
+    border-color: var(--primary-color);
+    background: rgba(74, 144, 217, 0.05);
+}
+
+.photo-placeholder span {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    text-align: center;
+    width: 100%;
+}
+
+.photo-placeholder.has-photos {
+    justify-content: flex-start;
+    align-content: flex-start;
+}
+
+.photo-placeholder.has-photos span {
+    display: none;
+}
+
+.preview-thumb {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 2px solid var(--border-color);
+}
+
+.preview-thumb-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.preview-thumb-remove {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    background: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+}
+
+/* History Photos */
+.history-photos {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.history-photo-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.history-photo-group label {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.history-photo-thumbs {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.history-photo-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.history-photo-thumb:hover {
+    transform: scale(1.1);
+}
+
+/* Photo Modal */
+.photo-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    z-index: 3000;
+    justify-content: center;
+    align-items: center;
+}
+
+.photo-modal.active {
+    display: flex;
+}
+
+.photo-modal img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+.photo-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+@media (max-width: 600px) {
+    .photo-upload-area {
+        grid-template-columns: 1fr;
+    }
+
+    .preview-thumb {
+        width: 60px;
+        height: 60px;
+    }
+}
+
 /* Score Input */
 .scores-input {
     display: grid;
@@ -337,6 +529,7 @@ header h1 {
 
 .history-item {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     padding: 15px;
     border-bottom: 1px solid var(--border-color);
@@ -345,6 +538,11 @@ header h1 {
 
 .history-item:last-child {
     border-bottom: none;
+}
+
+.history-photos {
+    width: 100%;
+    flex-basis: 100%;
 }
 
 .history-date {

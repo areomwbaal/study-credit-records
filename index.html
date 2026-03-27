@@ -131,6 +131,32 @@
                         <label>备注</label>
                         <textarea id="remarks" placeholder="可选，记录考试情况等"></textarea>
                     </div>
+
+                    <!-- 错题拍照 -->
+                    <div class="photo-section">
+                        <h4>📷 错题及订正</h4>
+                        <div class="photo-upload-area">
+                            <div class="photo-item">
+                                <label>错题照片</label>
+                                <div class="photo-input-wrapper">
+                                    <input type="file" id="wrongPhoto" accept="image/*" capture="environment" multiple>
+                                    <div class="photo-placeholder" id="wrongPhotoPreview">
+                                        <span>点击拍照或选择图片</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="photo-item">
+                                <label>订正照片</label>
+                                <div class="photo-input-wrapper">
+                                    <input type="file" id="correctionPhoto" accept="image/*" capture="environment" multiple>
+                                    <div class="photo-placeholder" id="correctionPhotoPreview">
+                                        <span>点击拍照或选择图片</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn btn-primary btn-large">保存成绩</button>
                 </form>
             </div>
@@ -214,6 +240,12 @@
         <div id="noStudentMessage" class="no-student">
             <p>👆 请先选择或添加一个学生</p>
         </div>
+    </div>
+
+    <!-- 照片查看模态框 -->
+    <div id="photoModal" class="photo-modal">
+        <button class="photo-modal-close" onclick="closePhotoModal()">&times;</button>
+        <img id="photoModalImg" src="" alt="查看大图">
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
