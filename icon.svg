@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="20" fill="#4a90d9"/>
-  <text x="50" y="65" font-size="50" text-anchor="middle" fill="white">A+</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#4a90d9"/>
+  <text x="256" y="340" font-size="280" font-weight="bold" font-family="Arial, sans-serif" text-anchor="middle" fill="white">A+</text>
+  <circle cx="400" cy="120" r="40" fill="#FFD700"/>
+  <polygon points="400,70 412,100 445,100 418,120 428,152 400,132 372,152 382,120 355,100 388,100" fill="#FFD700"/>
 </svg>

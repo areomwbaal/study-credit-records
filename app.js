@@ -27,6 +27,19 @@ let trendChart = null;
 // 临时存储待上传的图片
 let pendingPhotos = [];
 
+// 当前选择的头像
+let selectedAvatar = 'girl1';
+
+// 头像 SVG 数据
+const AVATARS = {
+    girl1: `<svg viewBox="0 0 100 100"><circle cx="50" cy="40" r="25" fill="#FFE4C4"/><circle cx="50" cy="100" r="40" fill="#FF69B4"/><path d="M25 30 Q50 0 75 30 Q80 45 75 50 Q50 35 25 50 Q20 45 25 30" fill="#4A3728"/><circle cx="42" cy="38" r="3" fill="#333"/><circle cx="58" cy="38" r="3" fill="#333"/><path d="M45 48 Q50 52 55 48" stroke="#333" fill="none" stroke-width="2"/><circle cx="35" cy="42" r="4" fill="#FFB6C1" opacity="0.5"/><circle cx="65" cy="42" r="4" fill="#FFB6C1" opacity="0.5"/></svg>`,
+    girl2: `<svg viewBox="0 0 100 100"><circle cx="50" cy="40" r="25" fill="#FFE4C4"/><circle cx="50" cy="100" r="40" fill="#9370DB"/><ellipse cx="50" cy="25" rx="30" ry="20" fill="#2C1810"/><ellipse cx="25" cy="45" rx="8" ry="15" fill="#2C1810"/><ellipse cx="75" cy="45" rx="8" ry="15" fill="#2C1810"/><circle cx="42" cy="38" r="3" fill="#333"/><circle cx="58" cy="38" r="3" fill="#333"/><path d="M45 48 Q50 52 55 48" stroke="#333" fill="none" stroke-width="2"/></svg>`,
+    girl3: `<svg viewBox="0 0 100 100"><circle cx="50" cy="40" r="25" fill="#FFE4C4"/><circle cx="50" cy="100" r="40" fill="#20B2AA"/><path d="M20 35 Q50 5 80 35 L75 55 Q50 45 25 55 Z" fill="#FF6347"/><circle cx="42" cy="38" r="3" fill="#333"/><circle cx="58" cy="38" r="3" fill="#333"/><path d="M45 48 Q50 52 55 48" stroke="#333" fill="none" stroke-width="2"/><circle cx="30" cy="25" r="5" fill="#FFD700"/></svg>`,
+    girl4: `<svg viewBox="0 0 100 100"><circle cx="50" cy="40" r="25" fill="#FFE4C4"/><circle cx="50" cy="100" r="40" fill="#FF8C00"/><path d="M22 40 Q20 15 50 15 Q80 15 78 40 Q75 50 70 45 Q50 55 30 45 Q25 50 22 40" fill="#1a1a1a"/><circle cx="42" cy="38" r="3" fill="#333"/><circle cx="58" cy="38" r="3" fill="#333"/><path d="M45 48 Q50 52 55 48" stroke="#333" fill="none" stroke-width="2"/></svg>`,
+    girl5: `<svg viewBox="0 0 100 100"><circle cx="50" cy="40" r="25" fill="#FFE4C4"/><circle cx="50" cy="100" r="40" fill="#87CEEB"/><path d="M20 30 Q35 10 50 15 Q65 10 80 30 Q85 50 75 55 L70 40 Q50 50 30 40 L25 55 Q15 50 20 30" fill="#D4A574"/><circle cx="20" cy="35" r="6" fill="#FFB6C1"/><circle cx="80" cy="35" r="6" fill="#FFB6C1"/><circle cx="42" cy="38" r="3" fill="#333"/><circle cx="58" cy="38" r="3" fill="#333"/><path d="M45 48 Q50 52 55 48" stroke="#333" fill="none" stroke-width="2"/></svg>`,
+    girl6: `<svg viewBox="0 0 100 100"><circle cx="50" cy="40" r="25" fill="#FFE4C4"/><circle cx="50" cy="100" r="40" fill="#DDA0DD"/><path d="M25 25 Q50 5 75 25 Q78 45 70 50 Q65 35 50 38 Q35 35 30 50 Q22 45 25 25" fill="#8B4513"/><path d="M30 50 Q25 70 30 75" stroke="#8B4513" stroke-width="6" fill="none"/><path d="M70 50 Q75 70 70 75" stroke="#8B4513" stroke-width="6" fill="none"/><circle cx="42" cy="38" r="3" fill="#333"/><circle cx="58" cy="38" r="3" fill="#333"/><path d="M45 48 Q50 52 55 48" stroke="#333" fill="none" stroke-width="2"/></svg>`
+};
+
 // DOM 元素
 const studentSelect = document.getElementById('studentSelect');
 const addStudentBtn = document.getElementById('addStudentBtn');
@@ -50,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTabs();
     setupEventListeners();
     setupPhotoUpload();
+    setupAvatarSelection();
 });
 
 // 加载学生列表
@@ -61,6 +75,7 @@ function loadStudents() {
         const option = document.createElement('option');
         option.value = student.id;
         option.textContent = `${student.name} (${student.grade}年级)`;
+        option.dataset.avatar = student.avatar || 'girl1';
         studentSelect.appendChild(option);
     });
 
@@ -69,6 +84,29 @@ function loadStudents() {
     if (lastStudent && data.students.some(s => s.id === lastStudent)) {
         studentSelect.value = lastStudent;
         selectStudent(lastStudent);
+    }
+
+    updateStudentAvatar();
+}
+
+// 更新学生头像显示
+function updateStudentAvatar() {
+    const data = getData();
+    const student = data.students.find(s => s.id === currentStudentId);
+
+    let avatarContainer = document.getElementById('currentStudentAvatar');
+    if (!avatarContainer) {
+        avatarContainer = document.createElement('div');
+        avatarContainer.id = 'currentStudentAvatar';
+        avatarContainer.className = 'current-student-avatar';
+        studentSelect.parentNode.insertBefore(avatarContainer, studentSelect);
+    }
+
+    if (student && student.avatar) {
+        avatarContainer.innerHTML = AVATARS[student.avatar] || AVATARS.girl1;
+        avatarContainer.style.display = 'block';
+    } else {
+        avatarContainer.style.display = 'none';
     }
 }
 
@@ -90,6 +128,8 @@ function selectStudent(studentId) {
         noStudentMessage.style.display = 'block';
         deleteStudentBtn.style.display = 'none';
     }
+
+    updateStudentAvatar();
 }
 
 // 设置标签页切换
@@ -144,6 +184,7 @@ function setupEventListeners() {
             id: 'student_' + Date.now(),
             name: name,
             grade: parseInt(grade),
+            avatar: selectedAvatar,
             createdAt: new Date().toISOString()
         };
 
@@ -743,4 +784,19 @@ function clearPhotoPreview() {
     document.getElementById('photoPreview').innerHTML = '<span>点击拍照或选择图片（可多张）</span>';
     document.getElementById('photoPreview').classList.remove('has-photos');
     document.getElementById('photoInput').value = '';
+}
+
+// ========== 头像选择相关 ==========
+
+// 设置头像选择
+function setupAvatarSelection() {
+    const avatarOptions = document.querySelectorAll('.avatar-option');
+
+    avatarOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            avatarOptions.forEach(o => o.classList.remove('selected'));
+            option.classList.add('selected');
+            selectedAvatar = option.dataset.avatar;
+        });
+    });
 }
