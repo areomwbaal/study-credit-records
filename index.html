@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小学生成绩记录</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 小学生成绩记录</h1>
+            <p class="subtitle">上海小学 · 语文 · 数学 · 英语</p>
+        </header>
+
+        <!-- 学生选择/管理 -->
+        <section class="student-section">
+            <div class="student-selector">
+                <label>当前学生：</label>
+                <select id="studentSelect">
+                    <option value="">请选择学生</option>
+                </select>
+                <button id="addStudentBtn" class="btn btn-primary">+ 添加学生</button>
+                <button id="deleteStudentBtn" class="btn btn-danger" style="display:none;">删除学生</button>
+            </div>
+        </section>
+
+        <!-- 添加学生弹窗 -->
+        <div id="studentModal" class="modal">
+            <div class="modal-content">
+                <h3>添加新学生</h3>
+                <input type="text" id="studentName" placeholder="学生姓名" maxlength="20">
+                <select id="studentGrade">
+                    <option value="1">一年级</option>
+                    <option value="2">二年级</option>
+                    <option value="3">三年级</option>
+                    <option value="4">四年级</option>
+                    <option value="5">五年级</option>
+                </select>
+                <div class="modal-buttons">
+                    <button id="confirmAddStudent" class="btn btn-primary">确认</button>
+                    <button id="cancelAddStudent" class="btn btn-secondary">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <main id="mainContent" style="display:none;">
+            <!-- 标签页 -->
+            <div class="tabs">
+                <button class="tab active" data-tab="record">📝 录入成绩</button>
+                <button class="tab" data-tab="history">📋 历史记录</button>
+                <button class="tab" data-tab="stats">📊 统计分析</button>
+            </div>
+
+            <!-- 录入成绩 -->
+            <div id="recordTab" class="tab-content active">
+                <form id="scoreForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>考试日期</label>
+                            <input type="date" id="examDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>考试类型</label>
+                            <select id="examType" required>
+                                <option value="daily">日常测验</option>
+                                <option value="weekly">周测</option>
+                                <option value="monthly">月考</option>
+                                <option value="midterm">期中考试</option>
+                                <option value="final">期末考试</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>学期</label>
+                            <select id="semester" required>
+                                <option value="2025-1">2025年第一学期</option>
+                                <option value="2025-2">2025年第二学期</option>
+                                <option value="2026-1" selected>2026年第一学期</option>
+                                <option value="2026-2">2026年第二学期</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="scores-input">
+                        <div class="score-item">
+                            <label>🔤 语文</label>
+                            <select id="chineseScore">
+                                <option value="">未参加</option>
+                                <option value="A+*">A+*</option>
+                                <option value="A">A</option>
+                                <option value="A-">A-</option>
+                                <option value="B+*">B+*</option>
+                                <option value="B">B</option>
+                                <option value="B-">B-</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                        <div class="score-item">
+                            <label>🔢 数学</label>
+                            <select id="mathScore">
+                                <option value="">未参加</option>
+                                <option value="A+*">A+*</option>
+                                <option value="A">A</option>
+                                <option value="A-">A-</option>
+                                <option value="B+*">B+*</option>
+                                <option value="B">B</option>
+                                <option value="B-">B-</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                        <div class="score-item">
+                            <label>🔠 英语</label>
+                            <select id="englishScore">
+                                <option value="">未参加</option>
+                                <option value="A+*">A+*</option>
+                                <option value="A">A</option>
+                                <option value="A-">A-</option>
+                                <option value="B+*">B+*</option>
+                                <option value="B">B</option>
+                                <option value="B-">B-</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>备注</label>
+                        <textarea id="remarks" placeholder="可选，记录考试情况等"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-large">保存成绩</button>
+                </form>
+            </div>
+
+            <!-- 历史记录 -->
+            <div id="historyTab" class="tab-content">
+                <div class="filter-bar">
+                    <select id="filterSemester">
+                        <option value="">全部学期</option>
+                        <option value="2025-1">2025年第一学期</option>
+                        <option value="2025-2">2025年第二学期</option>
+                        <option value="2026-1">2026年第一学期</option>
+                        <option value="2026-2">2026年第二学期</option>
+                    </select>
+                    <select id="filterType">
+                        <option value="">全部类型</option>
+                        <option value="daily">日常测验</option>
+                        <option value="weekly">周测</option>
+                        <option value="monthly">月考</option>
+                        <option value="midterm">期中考试</option>
+                        <option value="final">期末考试</option>
+                    </select>
+                </div>
+                <div id="historyList" class="history-list">
+                    <p class="empty-message">暂无成绩记录</p>
+                </div>
+            </div>
+
+            <!-- 统计分析 -->
+            <div id="statsTab" class="tab-content">
+                <div class="stats-controls">
+                    <select id="statsPeriod">
+                        <option value="week">按周统计</option>
+                        <option value="month">按月统计</option>
+                        <option value="semester">按学期统计</option>
+                    </select>
+                    <select id="statsSemester">
+                        <option value="">全部学期</option>
+                        <option value="2025-1">2025年第一学期</option>
+                        <option value="2025-2">2025年第二学期</option>
+                        <option value="2026-1">2026年第一学期</option>
+                        <option value="2026-2">2026年第二学期</option>
+                    </select>
+                </div>
+                <div class="stats-summary" id="statsSummary">
+                    <div class="stat-card chinese">
+                        <h4>🔤 语文</h4>
+                        <div class="stat-value" id="chineseMode">--</div>
+                        <div class="stat-label">最常见等级</div>
+                        <div class="stat-detail" id="chineseDistrib">
+                            <span>共 <b>0</b> 次</span>
+                        </div>
+                    </div>
+                    <div class="stat-card math">
+                        <h4>🔢 数学</h4>
+                        <div class="stat-value" id="mathMode">--</div>
+                        <div class="stat-label">最常见等级</div>
+                        <div class="stat-detail" id="mathDistrib">
+                            <span>共 <b>0</b> 次</span>
+                        </div>
+                    </div>
+                    <div class="stat-card english">
+                        <h4>🔠 英语</h4>
+                        <div class="stat-value" id="englishMode">--</div>
+                        <div class="stat-label">最常见等级</div>
+                        <div class="stat-detail" id="englishDistrib">
+                            <span>共 <b>0</b> 次</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="grade-distribution" id="gradeDistribution"></div>
+                <div class="chart-container">
+                    <h3>成绩趋势图</h3>
+                    <canvas id="trendChart"></canvas>
+                </div>
+                <div id="periodStats" class="period-stats"></div>
+            </div>
+        </main>
+
+        <!-- 未选择学生提示 -->
+        <div id="noStudentMessage" class="no-student">
+            <p>👆 请先选择或添加一个学生</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
