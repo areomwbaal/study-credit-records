@@ -277,17 +277,12 @@ header h1 {
     color: var(--text-color);
 }
 
-.photo-upload-area {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+.photo-input-wrapper.single {
+    width: 100%;
 }
 
-.photo-item label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    font-size: 0.9rem;
+.photo-input-wrapper.single .photo-placeholder {
+    min-height: 100px;
 }
 
 .photo-input-wrapper {
@@ -372,25 +367,8 @@ header h1 {
 /* History Photos */
 .history-photos {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     margin-top: 10px;
-    flex-wrap: wrap;
-}
-
-.history-photo-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.history-photo-group label {
-    font-size: 0.75rem;
-    color: var(--text-light);
-}
-
-.history-photo-thumbs {
-    display: flex;
-    gap: 5px;
     flex-wrap: wrap;
 }
 

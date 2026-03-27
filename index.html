@@ -134,25 +134,11 @@
 
                     <!-- 错题拍照 -->
                     <div class="photo-section">
-                        <h4>📷 错题及订正</h4>
-                        <div class="photo-upload-area">
-                            <div class="photo-item">
-                                <label>错题照片</label>
-                                <div class="photo-input-wrapper">
-                                    <input type="file" id="wrongPhoto" accept="image/*" capture="environment" multiple>
-                                    <div class="photo-placeholder" id="wrongPhotoPreview">
-                                        <span>点击拍照或选择图片</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="photo-item">
-                                <label>订正照片</label>
-                                <div class="photo-input-wrapper">
-                                    <input type="file" id="correctionPhoto" accept="image/*" capture="environment" multiple>
-                                    <div class="photo-placeholder" id="correctionPhotoPreview">
-                                        <span>点击拍照或选择图片</span>
-                                    </div>
-                                </div>
+                        <h4>📷 错题及订正照片</h4>
+                        <div class="photo-input-wrapper single">
+                            <input type="file" id="photoInput" accept="image/*" capture="environment" multiple>
+                            <div class="photo-placeholder" id="photoPreview">
+                                <span>点击拍照或选择图片（可多张）</span>
                             </div>
                         </div>
                     </div>

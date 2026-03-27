@@ -25,8 +25,7 @@ let currentStudentId = null;
 let trendChart = null;
 
 // 临时存储待上传的图片
-let pendingWrongPhotos = [];
-let pendingCorrectionPhotos = [];
+let pendingPhotos = [];
 
 // DOM 元素
 const studentSelect = document.getElementById('studentSelect');
@@ -230,8 +229,7 @@ function saveScore() {
         math: math || null,
         english: english || null,
         remarks: document.getElementById('remarks').value.trim(),
-        wrongPhotos: [...pendingWrongPhotos],
-        correctionPhotos: [...pendingCorrectionPhotos],
+        photos: [...pendingPhotos],
         createdAt: new Date().toISOString()
     };
 
@@ -289,9 +287,7 @@ function loadHistory() {
     };
 
     historyList.innerHTML = records.map(record => {
-        const hasWrongPhotos = record.wrongPhotos && record.wrongPhotos.length > 0;
-        const hasCorrectionPhotos = record.correctionPhotos && record.correctionPhotos.length > 0;
-        const hasPhotos = hasWrongPhotos || hasCorrectionPhotos;
+        const hasPhotos = record.photos && record.photos.length > 0;
 
         return `
         <div class="history-item" data-id="${record.id}">
@@ -318,22 +314,7 @@ function loadHistory() {
             </div>
             ${hasPhotos ? `
             <div class="history-photos">
-                ${hasWrongPhotos ? `
-                <div class="history-photo-group">
-                    <label>错题</label>
-                    <div class="history-photo-thumbs">
-                        ${record.wrongPhotos.map(p => `<img src="${p}" class="history-photo-thumb" onclick="viewPhoto('${p}')">`).join('')}
-                    </div>
-                </div>
-                ` : ''}
-                ${hasCorrectionPhotos ? `
-                <div class="history-photo-group">
-                    <label>订正</label>
-                    <div class="history-photo-thumbs">
-                        ${record.correctionPhotos.map(p => `<img src="${p}" class="history-photo-thumb" onclick="viewPhoto('${p}')">`).join('')}
-                    </div>
-                </div>
-                ` : ''}
+                ${record.photos.map(p => `<img src="${p}" class="history-photo-thumb" onclick="viewPhoto('${p}')">`).join('')}
             </div>
             ` : ''}
         </div>
@@ -646,36 +627,29 @@ function showToast(message, type = 'info') {
 
 // 设置照片上传
 function setupPhotoUpload() {
-    const wrongPhotoInput = document.getElementById('wrongPhoto');
-    const correctionPhotoInput = document.getElementById('correctionPhoto');
+    const photoInput = document.getElementById('photoInput');
 
-    wrongPhotoInput.addEventListener('change', (e) => {
-        handlePhotoSelect(e.target.files, 'wrong');
-    });
-
-    correctionPhotoInput.addEventListener('change', (e) => {
-        handlePhotoSelect(e.target.files, 'correction');
+    photoInput.addEventListener('change', (e) => {
+        handlePhotoSelect(e.target.files);
     });
 }
 
 // 处理图片选择
-async function handlePhotoSelect(files, type) {
-    const previewId = type === 'wrong' ? 'wrongPhotoPreview' : 'correctionPhotoPreview';
-    const preview = document.getElementById(previewId);
-    const pendingArray = type === 'wrong' ? pendingWrongPhotos : pendingCorrectionPhotos;
+async function handlePhotoSelect(files) {
+    const preview = document.getElementById('photoPreview');
 
     for (const file of files) {
         if (!file.type.startsWith('image/')) continue;
 
         try {
             const compressed = await compressImage(file);
-            pendingArray.push(compressed);
+            pendingPhotos.push(compressed);
         } catch (err) {
             console.error('图片压缩失败:', err);
         }
     }
 
-    updatePhotoPreview(preview, pendingArray, type);
+    updatePhotoPreview(preview, pendingPhotos);
 }
 
 // 压缩图片
@@ -718,9 +692,9 @@ function compressImage(file) {
 }
 
 // 更新照片预览
-function updatePhotoPreview(container, photos, type) {
+function updatePhotoPreview(container, photos) {
     if (photos.length === 0) {
-        container.innerHTML = '<span>点击拍照或选择图片</span>';
+        container.innerHTML = '<span>点击拍照或选择图片（可多张）</span>';
         container.classList.remove('has-photos');
         return;
     }
@@ -729,24 +703,17 @@ function updatePhotoPreview(container, photos, type) {
     container.innerHTML = photos.map((photo, index) => `
         <div class="preview-thumb-wrapper">
             <img src="${photo}" class="preview-thumb" onclick="viewPhoto('${photo}')">
-            <button type="button" class="preview-thumb-remove" onclick="removePhoto('${type}', ${index})">×</button>
+            <button type="button" class="preview-thumb-remove" onclick="removePhoto(${index})">×</button>
         </div>
     `).join('');
 }
 
 // 移除照片
-function removePhoto(type, index) {
+function removePhoto(index) {
     event.stopPropagation();
-    const previewId = type === 'wrong' ? 'wrongPhotoPreview' : 'correctionPhotoPreview';
-    const preview = document.getElementById(previewId);
-
-    if (type === 'wrong') {
-        pendingWrongPhotos.splice(index, 1);
-        updatePhotoPreview(preview, pendingWrongPhotos, type);
-    } else {
-        pendingCorrectionPhotos.splice(index, 1);
-        updatePhotoPreview(preview, pendingCorrectionPhotos, type);
-    }
+    const preview = document.getElementById('photoPreview');
+    pendingPhotos.splice(index, 1);
+    updatePhotoPreview(preview, pendingPhotos);
 }
 
 // 查看大图
@@ -772,12 +739,8 @@ document.addEventListener('click', (e) => {
 
 // 清空照片预览
 function clearPhotoPreview() {
-    pendingWrongPhotos = [];
-    pendingCorrectionPhotos = [];
-    document.getElementById('wrongPhotoPreview').innerHTML = '<span>点击拍照或选择图片</span>';
-    document.getElementById('wrongPhotoPreview').classList.remove('has-photos');
-    document.getElementById('correctionPhotoPreview').innerHTML = '<span>点击拍照或选择图片</span>';
-    document.getElementById('correctionPhotoPreview').classList.remove('has-photos');
-    document.getElementById('wrongPhoto').value = '';
-    document.getElementById('correctionPhoto').value = '';
+    pendingPhotos = [];
+    document.getElementById('photoPreview').innerHTML = '<span>点击拍照或选择图片（可多张）</span>';
+    document.getElementById('photoPreview').classList.remove('has-photos');
+    document.getElementById('photoInput').value = '';
 }
